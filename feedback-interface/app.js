@@ -960,8 +960,8 @@ CRITICAL TRANSLATION RULES:
       /* 4-5 Stars with strictly POSITIVE feedback → Google Review Screen */
       const positiveMsgEl = document.getElementById('positiveSuccessMessage');
       if (positiveMsgEl) {
-        positiveMsgEl.textContent =
-          'We cared for you with all our heart, and seeing you well means everything to us. Please share this on Google so another worried family can find the same hope and healing today — it’s already copied for you!';
+        positiveMsgEl.innerHTML =
+          '❤️ <strong>You’re just one step away!</strong> Your words could make a difference to someone. Kindly share your experience on Google Reviews - it’s already copied and ready to paste! 💖';
       }
 
       if (finalReviewQuote) finalReviewQuote.textContent = finalText;
