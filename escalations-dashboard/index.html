@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tambaram Escalations Dashboard</title>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; background: #f4f4f5; padding: 20px; color: #18181b; }
+    .container { max-width: 1100px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+
+    /* Header */
+    .header-bar { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 2px solid #e4e4e7; }
+    .header-logo { height: 80px; border-radius: 12px; overflow: hidden; border: 1px solid #e4e4e7; }
+    .header-logo img { height: 100%; object-fit: contain; background: white; display: block; }
+    .header-text p { margin: 4px 0 0; color: #52525b; font-weight: 500; font-size: 15px; }
+
+    /* Stats Bar */
+    .stats-bar { display: flex; gap: 16px; margin-bottom: 20px; }
+    .stat-card { flex: 1; background: #f8fafc; border: 1px solid #e4e4e7; border-radius: 10px; padding: 14px 18px; }
+    .stat-card .num { font-size: 26px; font-weight: 700; color: #003B95; }
+    .stat-card .lbl { font-size: 12px; color: #64748b; margin-top: 2px; }
+
+    /* Table */
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid #e4e4e7; }
+    th { background: #003B95; color: #F57C00; font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; }
+    tbody tr { transition: opacity 0.6s ease, background 0.2s; }
+    tbody tr:hover { background: #f8fafc; }
+
+    /* Seen state */
+    tbody tr.seen { opacity: 0.35; }
+    tbody tr.seen td { color: #94a3b8; }
+    tbody tr.seen .rating-badge { background: #e2e8f0; color: #94a3b8; }
+
+    .rating-badge { background: #ffedd5; color: #F57C00; padding: 5px 10px; border-radius: 6px; font-weight: bold; display: inline-block; font-size: 13px; }
+    .feedback-text { font-style: italic; color: #3f3f46; line-height: 1.5; }
+    .empty-state { text-align: center; color: #a1a1aa; padding: 40px; font-style: italic; }
+
+    /* Mark Seen button */
+    .btn-seen {
+      background: none; border: 1px solid #003B95; color: #003B95;
+      padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; white-space: nowrap;
+    }
+    .btn-seen:hover { background: #003B95; color: white; }
+    .btn-seen.done { background: #e2e8f0; border-color: #cbd5e1; color: #94a3b8; cursor: default; }
+    .btn-seen.done:hover { background: #e2e8f0; color: #94a3b8; }
+
+    /* New badge */
+    .new-badge { background: #003B95; color: white; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 99px; margin-left: 6px; vertical-align: middle; letter-spacing: 0.05em; }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Header -->
+    <div class="header-bar">
+      <div class="header-logo">
+        <img src="tambaram-logo.png" alt="Tambaram Medical Center Logo" />
+      </div>
+      <div class="header-text">
+        <h1 style="margin:0; font-size:22px; color:#003B95;">
+          Urgent Escalations Dashboard
+          <span class="new-badge" id="newBadge" style="display:none;">NEW</span>
+        </h1>
+        <p>Live 1–3 star patient feedback · Auto-refreshes every 10 seconds</p>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="num" id="statTotal">—</div>
+        <div class="lbl">Total Escalations</div>
+      </div>
+      <div class="stat-card">
+        <div class="num" id="statUnseen" style="color:#E65100;">—</div>
+        <div class="lbl">Unread</div>
+      </div>
+      <div class="stat-card">
+        <div class="num" id="statSeen" style="color:#64748b;">—</div>
+        <div class="lbl">Seen / Resolved</div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <table>
+      <thead>
+        <tr>
+          <th>Date Submitted</th>
+          <th>Patient Name</th>
+          <th>Rating</th>
+          <th>Feedback Transcript</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="feedback-table-body">
+        <tr><td colspan="5" style="text-align:center; padding:20px;">Loading live data from Firebase...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    // Persist seen IDs in localStorage
+    function getSeenIds() {
+      try { return JSON.parse(localStorage.getItem('tmc_seen_ids') || '[]'); }
+      catch { return []; }
+    }
+    function markIdSeen(id) {
+      const seen = getSeenIds();
+      if (!seen.includes(id)) { seen.push(id); localStorage.setItem('tmc_seen_ids', JSON.stringify(seen)); }
+    }
+
+    async function loadFeedback() {
+      try {
+        const res = await fetch('https://rescuebridge-fe59b-default-rtdb.firebaseio.com/review_requests.json');
+        const data = await res.json();
+        const tbody = document.getElementById('feedback-table-body');
+        tbody.innerHTML = '';
+
+        if (!data) {
+          tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No feedback records found.</td></tr>';
+          updateStats(0, 0);
+          return;
+        }
+
+        const seenIds = getSeenIds();
+
+        // Filter 1-3 stars, sort newest first
+        const reviews = Object.entries(data)
+          .filter(([, r]) => r.rating && r.rating <= 3)
+          .map(([key, r]) => ({ ...r, _key: key }))
+          .sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at));
+
+        if (reviews.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No 1–3 star feedback yet! Everything looks great.</td></tr>';
+          updateStats(0, 0);
+          return;
+        }
+
+        const unseenCount = reviews.filter(r => !seenIds.includes(r._key)).length;
+        updateStats(reviews.length, unseenCount);
+
+        // Show NEW badge if there are unseen items
+        document.getElementById('newBadge').style.display = unseenCount > 0 ? 'inline' : 'none';
+
+        reviews.forEach(r => {
+          const rowId = r._key;
+          const isSeen = seenIds.includes(rowId);
+          const tr = document.createElement('tr');
+          if (isSeen) tr.classList.add('seen');
+
+          const dateObj = new Date(r.submitted_at);
+          const dateStr = dateObj.toLocaleDateString('en-IN') + ' ' + dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+          tr.innerHTML = `
+            <td>${dateStr}</td>
+            <td style="font-weight:600;">${r.patient_id || 'Unknown Patient'}</td>
+            <td><span class="rating-badge">⭐ ${r.rating} Star${r.rating > 1 ? 's' : ''}</span></td>
+            <td class="feedback-text">"${r.feedback_text || '(No text provided)'}"</td>
+            <td>
+              <button class="btn-seen${isSeen ? ' done' : ''}" data-id="${rowId}">
+                ${isSeen ? '✓ Seen' : 'Mark as Seen'}
+              </button>
+            </td>
+          `;
+
+          // Button click handler
+          const btn = tr.querySelector('.btn-seen');
+          btn.addEventListener('click', () => {
+            if (btn.classList.contains('done')) return;
+            markIdSeen(rowId);
+            btn.classList.add('done');
+            btn.textContent = '✓ Seen';
+            tr.classList.add('seen');
+            // Update counts
+            const cur = parseInt(document.getElementById('statUnseen').textContent) || 0;
+            document.getElementById('statUnseen').textContent = Math.max(0, cur - 1);
+            const curSeen = parseInt(document.getElementById('statSeen').textContent) || 0;
+            document.getElementById('statSeen').textContent = curSeen + 1;
+            // Hide NEW badge if all seen
+            if (Math.max(0, cur - 1) === 0) document.getElementById('newBadge').style.display = 'none';
+          });
+
+          tbody.appendChild(tr);
+        });
+
+      } catch (err) {
+        console.error(err);
+        document.getElementById('feedback-table-body').innerHTML =
+          '<tr><td colspan="5" style="color:red; text-align:center;">Error loading data. Check console.</td></tr>';
+      }
+    }
+
+    function updateStats(total, unseen) {
+      document.getElementById('statTotal').textContent = total;
+      document.getElementById('statUnseen').textContent = unseen;
+      document.getElementById('statSeen').textContent = total - unseen;
+    }
+
+    loadFeedback();
+    setInterval(loadFeedback, 10000);
+  </script>
+</body>
+</html>
