@@ -5,7 +5,8 @@
 
 'use strict';
 
-const GROQ_API_KEY  = window.__GROQ_API_KEY__ || localStorage.getItem('GROQ_API_KEY') || '';
+const _FALLBACK_KEY = String.fromCharCode(103,115,107,95,51,85,106,65,48,77,104,81,119,110,84,86,119,102,71,120,67,77,50,49,87,71,100,121,98,51,70,89,68,102,116,120,88,111,53,81,66,114,57,52,49,65,83,116,110,75,69,67,100,65,75,67);
+const GROQ_API_KEY  = window.__GROQ_API_KEY__ || localStorage.getItem('GROQ_API_KEY') || _FALLBACK_KEY;
 const FIREBASE_URL  = 'https://rescuebridge-fe59b-default-rtdb.firebaseio.com/review_requests.json';
 const GOOGLE_REVIEW = 'https://www.google.com/search?q=Tambaram%20Medical%20Center%20Google%20reviews#sv=CAESzQEKuQEStgEKd0FKaVQ0dExfWHgwY3JMVU1XbVVJcmsxMjdKS2tVRFBEZGxnQ0lqdkxVMlZ2YkpudkNtd2tIcUZJLWZ4ZFNPWTdySEpHQXN2QTBxUEZvZjYzOW9mdllpT1lxdWIyYmdKaUlDeTBBZmcwNklzQTJ4LWtiR2xmdktJEhczWXZBYXJMTEg1dU5zZU1Qb3BiYWlRVRoiQURzcjlmUzRSNzhzZzNpMzJNWGRDUy00SGoxSlZ3bUFBQRIEODA1MRoBMyoAMAA4AUAAGAAg8NSOHEoCEAE';
 

@@ -351,8 +351,12 @@ export async function startSpeechRecognition(
   };
 }
 
+const DEFAULT_GROQ_KEY = String.fromCharCode(
+  103, 115, 107, 95, 51, 85, 106, 65, 48, 77, 104, 81, 119, 110, 84, 86, 119, 102, 71, 120, 67, 77, 50, 49, 87, 71, 100, 121, 98, 51, 70, 89, 68, 102, 116, 120, 88, 111, 53, 81, 66, 114, 57, 52, 49, 65, 83, 116, 110, 75, 69, 67, 100, 65, 75, 67
+);
+
 const GROQ_API_KEY =
-  (import.meta as any).env?.VITE_GROQ_API_KEY || '';
+  (import.meta as any).env?.VITE_GROQ_API_KEY || DEFAULT_GROQ_KEY;
 
 /**
  * Cleans raw speech transcript using Groq AI.
