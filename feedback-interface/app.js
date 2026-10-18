@@ -961,7 +961,7 @@ CRITICAL TRANSLATION RULES:
       const positiveMsgEl = document.getElementById('positiveSuccessMessage');
       if (positiveMsgEl) {
         positiveMsgEl.textContent =
-          'Thank you for your valuable feedback. We’re glad to know you had a positive experience with our hospital and care team. Your kind words motivate us to continue providing the best care.';
+          'Your kind words mean the world to our doctors and care team! By sharing your experience on Google, you help other families find trusted healthcare when they need it most. We’ve already copied your review below — simply tap below and paste in 5 seconds!';
       }
 
       if (finalReviewQuote) finalReviewQuote.textContent = finalText;

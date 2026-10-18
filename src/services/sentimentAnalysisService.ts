@@ -28,7 +28,7 @@ export interface SentimentAnalysisResult {
 
 export const PATIENT_RESPONSE_MESSAGES: Record<SentimentType, string> = {
   positive:
-    'Thank you for your valuable feedback. We’re glad to know you had a positive experience with our hospital and care team. Your kind words motivate us to continue providing the best care.',
+    'Your kind words mean the world to our doctors and care team! By sharing your experience on Google, you help other families find trusted healthcare when they need it most. We’ve already copied your review below — simply tap below and paste in 5 seconds!',
   neutral:
     'Thank you for sharing your feedback with us. We have carefully noted your suggestions and will continue working to improve your experience and our services.',
   negative:
