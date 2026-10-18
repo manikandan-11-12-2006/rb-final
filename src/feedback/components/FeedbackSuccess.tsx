@@ -29,7 +29,7 @@ export const FeedbackSuccess: React.FC<FeedbackSuccessProps> = ({
             </div>
             <h2 className="text-2xl font-bold text-slate-900 mb-2">Thank You for Your Feedback!</h2>
             <p className="text-sm text-slate-700 mb-6 leading-relaxed">
-              You’re just one step away! Kindly post this on Google Reviews so everyone can benefit from your experience — it’s already copied and ready to paste!
+              We cared for you with all our heart, and seeing you well means everything to us. Please share this on Google so another worried family can find the same hope and healing today — it’s already copied for you!
             </p>
 
             {finalReviewText && (
