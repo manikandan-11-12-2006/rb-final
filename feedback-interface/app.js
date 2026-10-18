@@ -961,7 +961,7 @@ CRITICAL TRANSLATION RULES:
       const positiveMsgEl = document.getElementById('positiveSuccessMessage');
       if (positiveMsgEl) {
         positiveMsgEl.textContent =
-          'Your words can help a worried family find the right care today. We’ve copied your review below — just tap below and paste!';
+          'You’re just one step away! Kindly post this on Google Reviews so everyone can benefit from your experience — it’s already copied and ready to paste!';
       }
 
       if (finalReviewQuote) finalReviewQuote.textContent = finalText;
